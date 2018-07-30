@@ -5,7 +5,11 @@ const run = require('./runLog');
 
 const main = async (mode = 'development') => {
     console.log('build ' + mode)
-    console.log('Linting...')
+
+    console.log('Cleaning build folder...')
+    await run('rm', ['-rf', 'build'])
+
+    console.log('Build folder cleaned, Linting...')
     await run('gts', ['fix'])
     
     console.log('Code linted, Transpiling Typescript...')
