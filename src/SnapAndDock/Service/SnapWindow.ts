@@ -193,24 +193,24 @@ export class SnapWindow {
                 }, 16);
             }
         });
-        this.window.addEventListener('bounds-changing', async (event: fin.WindowBoundsEvent) => {
-            if (isCitrix()) {
-                notCitrix();
-                this.stopMouseTracker();
-            }
-            this.window.updateOptions({opacity: 0.8});
-            const bounds: fin.WindowBounds = this.checkBounds(event);
-            this.applyBounds(bounds);
+        // this.window.addEventListener('bounds-changing', async (event: fin.WindowBoundsEvent) => {
+        //     if (isCitrix()) {
+        //         notCitrix();
+        //         this.stopMouseTracker();
+        //     }
+        //     this.window.updateOptions({opacity: 0.8});
+        //     const bounds: fin.WindowBounds = this.checkBounds(event);
+        //     this.applyBounds(bounds);
 
-            // Convert 'changeType' into our enum type
-            const type: Mask<eTransformType> = event.changeType + 1;
+        //     // Convert 'changeType' into our enum type
+        //     const type: Mask<eTransformType> = event.changeType + 1;
 
-            this.boundsChangeCountSinceLastCommit++;
+        //     this.boundsChangeCountSinceLastCommit++;
 
-            if (this.boundsChangeCountSinceLastCommit > 1) {
-                this.onTransform.emit(this, type);
-            }
-        });
+        //     if (this.boundsChangeCountSinceLastCommit > 1) {
+        //         this.onTransform.emit(this, type);
+        //     }
+        // });
         return this;
     }
     public getId(): string {

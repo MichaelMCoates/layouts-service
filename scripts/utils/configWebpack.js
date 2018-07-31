@@ -50,7 +50,7 @@ module.exports = (mode) => webpack(mode === 'production' ? {
         new CopyWebpackPlugin([{
             from: './resources/SnapDockService/app.template.json',
             to: 'SnapDockService/app.json',
-            transform: transform(process.env.OF_RUNTIME_VERSION || 'canary', 'http://localhost:1337/SnapDockService/provider.html', mode === 'development')
+            transform: transform(process.env.OF_RUNTIME_VERSION || '9.61.32.34', 'http://localhost:1337/SnapDockService/provider.html', mode === 'development')
         }]),
     ],
     mode: 'development'
