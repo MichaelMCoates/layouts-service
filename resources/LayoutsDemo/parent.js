@@ -14,10 +14,26 @@ const openChild = (name) => {
     return win;
 }
 
+let appNum = 1;
+
 const openApp = async () => {
     const appUrl = `${launchDir}/app2.json`;
     console.log('appurl', appUrl);
-    fin.desktop.Application.createFromManifest(appUrl, a=>a.run());
+    console.log("appNum", appNum)
+    fin.desktop.Application.createFromManifest(
+        appUrl,
+        a=>{
+            console.log("a", a)
+            console.log("before run", appNum);
+            appNum += 1;
+            a.run(
+                succ=> console.log(succ),
+                err => console.log(err)
+            )
+            console.log("after run", appNum);
+        },
+        err => console.log(err)
+    );
     // v2 api broken for createfromman / run
     // const app = await fin.Application.createFromManifest(appUrl);
     // app.run();

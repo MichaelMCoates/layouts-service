@@ -41,25 +41,31 @@ export const onLayoutRestore = (listener: (layoutApp: LayoutApp) => void): void 
 };
 // Set the current layout
 export const saveCurrentLayout = (payload: LayoutName): Promise<Layout> => {
+    console.log('DISPATCH 1');
     return layoutsChannel.dispatch('saveCurrentLayout', payload);
 };
 // Set layout by sending a Layout object
 export const saveLayoutObject = (payload: Layout): Promise<Layout> => {
+    console.log('DISPATCH 2');
     return layoutsChannel.dispatch('saveLayoutObject', payload);
 };
 // Get a previously saved layout
 export const getLayout = (name: LayoutName): Promise<Layout> => {
+    console.log('DISPATCH 3');
     return layoutsChannel.dispatch('getLayout', name);
 };
 // Get the names of all previously saved layouts
 export const getAllLayoutNames = (): Promise<LayoutName[]> => {
+    console.log('DISPATCH 4');
     return layoutsChannel.dispatch('getAllLayoutNames', name);
 };
 // Restore a previously saved layout - in v2, can restore from your own layout object
 export const restoreLayout = (payload: LayoutName|Layout): Promise<Layout> => {
+    console.log('DISPATCH 5');
     return layoutsChannel.dispatch('restoreLayout', payload);
 };
 // Send this to the service when you have registered all routes after registration
 export const ready = (): Promise<Layout> => {
+    console.log('DISPATCH 6');
     return layoutsChannel.dispatch('appReady');
 };

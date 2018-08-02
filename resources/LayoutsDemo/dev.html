@@ -14,13 +14,14 @@
 
         // Add some JS
         const jsScript = document.createElement('script');
-        jsScript.setAttribute('src', `${launchDir}/parent.js`);
+        jsScript.setAttribute('src', `./parent.js`);
         document.body.appendChild(jsScript);
 
         // SET LAYOUT
         const setButton = document.createElement('button');
         setButton.innerText = 'Set Layout'
         setButton.onclick = async () => {
+            console.log("NOT SUPPOSED TO BE HERE 1")
             const name = document.getElementById('layoutName').value;
             const layout = await window.LayoutsManager.saveCurrentLayout(name);
             document.getElementById('showLayout').innerHTML = JSON.stringify(layout, null, 2);
@@ -31,6 +32,7 @@
         const getButton = document.createElement('button');
         getButton.innerText = 'Get Layout'
         getButton.onclick = async () => {
+            console.log("NOT SUPPOSED TO BE HERE 2")
             const name = document.getElementById('layoutName').value;
             const layout = await window.LayoutsManager.getLayout(name);
             document.getElementById('showLayout').innerHTML = JSON.stringify(layout, null, 2);
@@ -41,6 +43,7 @@
         const getNamesButton = document.createElement('button');
         getNamesButton.innerText = 'Get All Layouts'
         getNamesButton.onclick = async () => {
+            console.log("NOT SUPPOSED TO BE HERE 3")
             const layoutNames = await window.LayoutsManager.getAllLayoutNames();
             document.getElementById('showLayout').innerHTML = JSON.stringify(layoutNames, null, 2);
         }
@@ -50,6 +53,7 @@
         const restoreButton = document.createElement('button');
         restoreButton.innerText = 'Restore Layout'
         restoreButton.onclick = async () => {
+            console.log("NOT SUPPOSED TO BE HERE 4")
             const name = document.getElementById('layoutName').value;
             const layout = await window.LayoutsManager.restoreLayout(name);
             console.log('after layout,', layout)
@@ -61,6 +65,7 @@
         const createChild = document.createElement('button');
         createChild.innerText = 'Create Child'
         createChild.onclick = () => {
+            console.log("NOT SUPPOSED TO BE HERE 5")
             openChild('win' + i);
             i++;    
         }
@@ -70,10 +75,25 @@
         const createApp = document.createElement('button');
         createApp.innerText = 'Create (one) App'
         createApp.onclick = () => {
-            openApp();     
+            console.log("THIS CLICK")
+            openApp();
         }
         document.body.appendChild(createApp);
 
+        fin.desktop.main(() => {
+            const delay = 10000
+            async function loop () {
+                await openApp();
+                setTimeout(() => {
+                    fin.desktop.Application.wrap('App-2').close(
+                        false, 
+                        () => {setTimeout(loop, delay)},
+                        (err) => console.log(err)
+                    )
+                }, delay)
+            }
+            loop();
+        })
     </script>
     <div>
         <textArea id='showLayout' style="margin: 0px;width: 100%;height: 90%;"></textArea>

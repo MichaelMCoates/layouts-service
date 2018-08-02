@@ -13,7 +13,6 @@
     },
     "runtime": {
         "arguments": "--v=1 --enable-crash-reporting",
-        "version": "9.61.33.15"
-    },
-    "services": [{"name": "layoutsManager", "manifestUrl": "http://localhost:1337/LayoutsService/app.json"}]
+        "version": "9.61.31.76"
+    }
 }

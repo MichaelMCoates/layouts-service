@@ -17,6 +17,7 @@ export async function registerService(): Promise<Provider> {
     providerChannel.register('restoreLayout', restoreLayout);
     providerChannel.register('getAllLayoutNames', getAllLayoutNames);
     providerChannel.register('appReady', (payload: void, identity: Identity) => {
+        console.log('IN APPREADY');
         const {uuid} = identity;
         const appToRestore = getAppToRestore(uuid);
         if (appToRestore) {
