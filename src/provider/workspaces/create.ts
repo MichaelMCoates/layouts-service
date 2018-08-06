@@ -40,7 +40,7 @@ export const getCurrentLayout = async(): Promise<Layout> => {
                 return {};
             });
 
-            // FOR PRE 9.61.33.15
+            // FOR PRE 9.61.33.32
             if (!appInfo.manifest) {
                 appInfo.manifest = await ofApp.getManifest().catch(() => undefined);
             }

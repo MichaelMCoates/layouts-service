@@ -1,0 +1,14 @@
+{
+    "devtools_port": 9090,
+    "runtime": {
+        "arguments": "--v=1 --enable-crash-reporting",
+        "version": "9.61.33.32"
+    },
+    "services":[{"name": "layoutsManager", "manifestUrl": "http://localhost:1337/provider/app.json"}],
+    "startup_app": {
+        "name": "SR-testApp2",
+        "uuid": "SR-testApp2",
+        "url": "http://localhost:1337/test/SaveAndRestore/test.html",
+        "autoShow": true
+    }
+}

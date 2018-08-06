@@ -6,6 +6,7 @@
   "main": "module_dist/main.js",
   "scripts": {
     "test": "node test/runner.js",
+    "test:SaveAndRestore": "node test/runnerSR.js",
     "check": "gts check",
     "clean": "gts clean",
     "fix": "gts fix",
