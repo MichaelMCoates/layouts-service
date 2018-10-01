@@ -44,7 +44,7 @@ const positionWindow = async (win: WindowState) => {
 };
 
 export async function createChild(parentWindowName: string): Promise<void> {
-    const win = await openChild(parentWindowName + ' -  win' + numChildren, numChildren);
+    const win = await openChild(parentWindowName + ' - win' + numChildren, numChildren);
     win.show();
 }
 
