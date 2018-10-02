@@ -8,6 +8,8 @@ import {getBounds} from './utils/getBounds';
 import {Win} from './utils/getWindow';
 import {resizeWindowToSize} from './utils/resizeWindowToSize';
 import { ChannelClient } from 'hadouken-js-adapter/out/types/src/api/interappbus/channel/client';
+import { isInGroup } from './utils/isInGroup';
+import { delay } from './utils/delay';
 
 let win1: Window, client: ChannelClient, win2: Window, fin: Fin, app1: Application, app2: Application;
 
@@ -18,52 +20,37 @@ test.before(async () => {
     fin = await getConnection();
     client = await fin.InterApplicationBus.Channel.connect({ uuid: 'layouts-service' });
 });
+
 test.beforeEach(async () => {
-    // const app1Name = getAppName();
-    // const app2Name = getAppName();
-    // app1 = await fin.Application.create({
-    //     uuid: app1Name,
-    //     name: app1Name,
-    //     mainWindowOptions: {
-    //         autoShow: true, 
-    //         saveWindowState: false, 
-    //         defaultTop: 100, 
-    //         defaultLeft: 100, 
-    //         defaultHeight: 200,
-    //         url: 'http://localhost:1337/demo/app4.html',
-    //         defaultWidth: 200
-    //     }
-    // });
-    // app2 = await fin.Application.create({
-    //     uuid: app2Name,
-    //     name: app2Name,
-    //     mainWindowOptions: {
-    //         autoShow: true,
-    //         saveWindowState: false,
-    //         defaultTop: 100,
-    //         defaultLeft: 100,
-    //         defaultHeight: 200,
-    //         url: 'http://localhost:1337/demo/app4.html',
-    //         defaultWidth: 200
-    //     }
-    // });
-
-    // await app1.run();
-    // await app2.run();
-
-    // win1 = await fin.Window.wrap({uuid: app1.identity.uuid, name: app1.identity.name});
-    // win2 = await fin.Window.wrap({uuid: app2.identity.uuid, name: app2.identity.name});
 });
 
 test.afterEach.always(async () => {
     if (app1 !== undefined) {
         await app1.close();
     }
-    // await app2.close();
+
+    if (app2 !== undefined) {
+        await app2.close();
+    }
+
     fin.System.removeAllListeners();
 });
 
 test('Programmatic Save and Restore - 1 App', async t => {
+
+    let y: () => void;
+    let n: (e: string) => void;
+    const p = new Promise((res, rej) => {
+        y = res;
+        n = rej;
+    });
+
+    const passIfAppCreated = async (event: {topic: string, type: string, uuid: string}) => {
+        if (event.uuid === app1.identity.uuid) {
+            y();
+        }
+    };
+
     const app1Name = getAppName();
 
     app1 = await fin.Application.create({
@@ -85,18 +72,6 @@ test('Programmatic Save and Restore - 1 App', async t => {
     const generatedLayout = await client.dispatch('generateLayout');
 
     await app1.close();
-    let y: () => void;
-    let n: (e: string) => void;
-    const p = new Promise((res, rej) => {
-        y = res;
-        n = rej;
-    });
-
-    const passIfAppCreated = async (event: {topic: string, type: string, uuid: string}) => {
-        if (event.uuid === app1.identity.uuid) {
-            y();
-        }
-    };
 
     await fin.System.addListener('application-created', passIfAppCreated);
 
@@ -112,7 +87,6 @@ test('Programmatic Save and Restore - 1 App', async t => {
 
     await p;
     t.pass();
-
 });
 
 test('Programmatic Save and Restore - 1 App 1 Child', async t => {
@@ -176,8 +150,6 @@ test('Programmatic Save and Restore - 2 Snapped Apps', async t => {
         n = rej;
     });
 
-    let numAppsRestored = 0;
-
     const passIfAppsCreated = async (event: { topic: string, type: string, uuid: string }) => {
         if (event.uuid === app1.identity.uuid || event.uuid === app2.identity.uuid) {
             numAppsRestored++;
@@ -186,6 +158,8 @@ test('Programmatic Save and Restore - 2 Snapped Apps', async t => {
             y();
         }
     };
+    
+    let numAppsRestored = 0;
 
     const app1Name = getAppName();
     const app2Name = getAppName();
@@ -231,5 +205,95 @@ test('Programmatic Save and Restore - 2 Snapped Apps', async t => {
 
     t.is(bounds1.top, bounds2.top);
     t.is(bounds1.left, bounds2.right);
+});
+
+test('Programmatic Save and Restore - 2 Tabbed Apps', async t => {
+    let y: () => void;
+    let n: (e: string) => void;
+    const p = new Promise((res, rej) => {
+        y = res;
+        n = rej;
+    });
+    
+    const passIfAppsCreated = async (event: { topic: string, type: string, uuid: string }) => {
+        if (event.uuid === app1.identity.uuid || event.uuid === app2.identity.uuid) {
+            numAppsRestored++;
+        }
+        if (numAppsRestored === 2) {
+            y();
+        }
+    };
+
+    let numAppsRestored = 0;
+
+    const app1Name = getAppName();
+    const app2Name = getAppName();
+    app1 = await fin.Application.create({
+        url: 'http://localhost:1337/test/registeredApp.html',
+        uuid: app1Name,
+        name: app1Name,
+        mainWindowOptions: { autoShow: true, saveWindowState: false, defaultTop: 100, defaultLeft: 100, defaultHeight: 200, defaultWidth: 200 }
+    });
+    app2 = await fin.Application.create({
+        url: 'http://localhost:1337/test/registeredApp.html',
+        uuid: app2Name,
+        name: app2Name,
+        mainWindowOptions: { autoShow: true, saveWindowState: false, defaultTop: 300, defaultLeft: 400, defaultHeight: 200, defaultWidth: 200 }
+    });
+
+    await app1.run();
+    await app2.run();
+
+    win1 = await fin.Window.wrap({ uuid: app1.identity.uuid, name: app1.identity.uuid });
+    win2 = await fin.Window.wrap({ uuid: app2.identity.uuid, name: app2.identity.uuid });
+    
+    const win2Bounds = await getBounds(win2);
+
+    await dragWindowTo(win1, win2Bounds.left, win2Bounds.top);
+    
+    const generatedLayout = await client.dispatch('generateLayout');
+    
+    await app1.close();
+    await app2.close();
+    
+    await fin.System.addListener('application-created', passIfAppsCreated);
+    
+    await client.dispatch('restoreLayout', generatedLayout);
+    
+    await p;
+    
+    let bounds1 = await getBounds(win1);
+    let bounds2 = await getBounds(win2);
+
+    await delay(1000);
+    
+    // Move the tab group using the tab strip.
+    robot.moveMouse(bounds2.left, bounds2.top);
+    robot.moveMouseSmooth(bounds2.left + 10, bounds2.top - 50);
+    await delay(500);
+    robot.mouseToggle('down');
+    
+    robot.moveMouseSmooth(bounds2.left + 100, bounds2.top + 100);
+    await delay(500);
+    robot.mouseToggle('up');
+    
+    bounds2 = await getBounds(win2);
+    
+    // Click on both tabs.
+    robot.moveMouse(bounds2.left, bounds2.top);
+    robot.moveMouseSmooth(bounds2.left + 50, bounds2.top - 25);
+    await delay(500);
+    robot.mouseClick();
+    
+    robot.moveMouse(bounds2.left, bounds2.top);
+    robot.moveMouseSmooth(bounds2.left + 150, bounds2.top - 25);
+    await delay(500);
+    robot.mouseClick();
+    
+    bounds1 = await getBounds(win1);
+    bounds2 = await getBounds(win2);
+
+    t.is(bounds1.top, bounds2.top);
+    t.is(bounds1.right, bounds2.right);
 });
 
