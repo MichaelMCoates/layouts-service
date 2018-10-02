@@ -518,9 +518,10 @@ test('Programmatic Save and Restore - Deregistered - 2 Tabbed Apps', async t => 
     await client.dispatch('restoreLayout', generatedLayout);
 
     setTimeout(
-        () => {
+        async () => {
+            const options = await win1.getOptions();
             y();
-            t.pass();
+            options.frame ? t.pass() : t.fail();
         }, 2500
     );
 
