@@ -33,7 +33,7 @@ test.afterEach.always(async () => {
         await app2.close();
     }
 
-    fin.System.removeAllListeners();
+    await fin.System.removeAllListeners();
 });
 
 test('Programmatic Save and Restore - 1 App', async t => {
@@ -351,8 +351,6 @@ test('Programmatic Save and Restore - Deregistered - 1 App', async t => {
     await p;
 });
 
-
-
 test('Programmatic Save and Restore - Deregistered - 1 App 1 Child', async t => {
     let y: () => void;
     let n: (e: string) => void;
@@ -377,12 +375,12 @@ test('Programmatic Save and Restore - Deregistered - 1 App 1 Child', async t => 
         }
     });
     
-        const failIfWindowCreated = async (event: { topic: string, type: string, uuid: string, name: string }) => {
-            if (event.name === 'Child-1 - win0' || event.name === app1Name) {
-                y();
-                t.fail();
-            }
-        };
+    const failIfWindowCreated = async (event: { topic: string, type: string, uuid: string, name: string }) => {
+        if (event.name === 'Child-1 - win0' || event.name === app1Name) {
+            y();
+            t.fail();
+        }
+    };
     
     await app1.run();
 
@@ -393,6 +391,129 @@ test('Programmatic Save and Restore - Deregistered - 1 App 1 Child', async t => 
     await fin.System.addListener('window-created', failIfWindowCreated);
 
     await app1.close();
+
+    await client.dispatch('restoreLayout', generatedLayout);
+
+    setTimeout(
+        () => {
+            y();
+            t.pass();
+        }, 2500
+    );
+
+    await p;
+});
+
+test('Programmatic Save and Restore - Deregistered - 2 Snapped Apps', async t => {
+    let y: () => void;
+    let n: (e: string) => void;
+    const p = new Promise((res, rej) => {
+        y = res;
+        n = rej;
+    });
+
+    const app1Name = getAppName();
+    const app2Name = getAppName();
+    app1 = await fin.Application.create({
+        url: 'http://localhost:1337/test/registeredApp.html',
+        uuid: app1Name,
+        name: app1Name,
+        mainWindowOptions: { autoShow: true, saveWindowState: false, defaultTop: 100, defaultLeft: 100, defaultHeight: 200, defaultWidth: 200 }
+    });
+    app2 = await fin.Application.create({
+        url: 'http://localhost:1337/test/deregisteredApp-createChild.html',
+        uuid: app2Name,
+        name: app2Name,
+        mainWindowOptions: { autoShow: true, saveWindowState: false, defaultTop: 300, defaultLeft: 400, defaultHeight: 200, defaultWidth: 200 }
+    });
+
+    const failIfWindowCreated = async (event: { topic: string, type: string, uuid: string, name: string }) => {
+        if (event.name === `Child-1 - win0` || event.name === app2Name) {
+            y();
+            t.fail();
+        }
+    };
+
+    await app1.run();
+    await app2.run();
+
+    await delay(1000);
+
+    win1 = await fin.Window.wrap({ uuid: app1.identity.uuid, name: app1.identity.uuid });
+    win2 = await fin.Window.wrap({ uuid: app2Name, name: `Child-1 - win0`});
+
+    const win2Bounds = await getBounds(win2);
+
+    await dragWindowTo(win1, win2Bounds.right + 2, win2Bounds.top + 40);
+    await dragWindowTo(win2, 700, 300);
+
+    const generatedLayout = await client.dispatch('generateLayout');
+
+    await app1.close();
+    await app2.close();
+
+    await fin.System.addListener('window-created', failIfWindowCreated);
+
+    await client.dispatch('restoreLayout', generatedLayout);
+
+    setTimeout(
+        () => {
+            y();
+            t.pass();
+        }, 2500
+    );
+
+    await p;
+});
+
+test('Programmatic Save and Restore - Deregistered - 2 Tabbed Apps', async t => {
+    let y: () => void;
+    let n: (e: string) => void;
+    const p = new Promise((res, rej) => {
+        y = res;
+        n = rej;
+    });
+
+    const app1Name = getAppName();
+    const app2Name = getAppName();
+    app1 = await fin.Application.create({
+        url: 'http://localhost:1337/test/registeredApp.html',
+        uuid: app1Name,
+        name: app1Name,
+        mainWindowOptions: { autoShow: true, saveWindowState: false, defaultTop: 100, defaultLeft: 100, defaultHeight: 200, defaultWidth: 200 }
+    });
+    app2 = await fin.Application.create({
+        url: 'http://localhost:1337/test/deregisteredApp-createChild.html',
+        uuid: app2Name,
+        name: app2Name,
+        mainWindowOptions: { autoShow: true, saveWindowState: false, defaultTop: 300, defaultLeft: 400, defaultHeight: 200, defaultWidth: 200 }
+    });
+
+    const failIfWindowCreated = async (event: { topic: string, type: string, uuid: string, name: string }) => {
+        if (event.name === `Child-1 - win0` || event.name === app2Name) {
+            y();
+            t.fail();
+        }
+    };
+
+    await app1.run();
+    await app2.run();
+
+    await delay(1000);
+
+    win1 = await fin.Window.wrap({ uuid: app1.identity.uuid, name: app1.identity.uuid });
+    win2 = await fin.Window.wrap({ uuid: app2.identity.uuid, name: `Child-1 - win0` });
+
+    const win2Bounds = await getBounds(win2);
+
+    await dragWindowTo(win1, win2Bounds.left, win2Bounds.top);
+
+    const generatedLayout = await client.dispatch('generateLayout');
+
+    await app1.close();
+    await app2.close();
+
+    await fin.System.addListener('window-created', failIfWindowCreated);
 
     await client.dispatch('restoreLayout', generatedLayout);
 
