@@ -37,19 +37,12 @@ test.afterEach.always(async () => {
 });
 
 test('Programmatic Save and Restore - 1 App', async t => {
-
     let y: () => void;
     let n: (e: string) => void;
     const p = new Promise((res, rej) => {
         y = res;
         n = rej;
     });
-
-    const passIfAppCreated = async (event: {topic: string, type: string, uuid: string}) => {
-        if (event.uuid === app1.identity.uuid) {
-            y();
-        }
-    };
 
     const app1Name = getAppName();
 
@@ -66,6 +59,12 @@ test('Programmatic Save and Restore - 1 App', async t => {
             defaultWidth: 200
         }
     });
+
+    const passIfAppCreated = async (event: {topic: string, type: string, uuid: string}) => {
+        if (event.uuid === app1.identity.uuid) {
+            y();
+        }
+    };
 
     await app1.run();
 
@@ -149,15 +148,6 @@ test('Programmatic Save and Restore - 2 Snapped Apps', async t => {
         y = res;
         n = rej;
     });
-
-    const passIfAppsCreated = async (event: { topic: string, type: string, uuid: string }) => {
-        if (event.uuid === app1.identity.uuid || event.uuid === app2.identity.uuid) {
-            numAppsRestored++;
-        }
-        if (numAppsRestored === 2) {
-            y();
-        }
-    };
     
     let numAppsRestored = 0;
 
@@ -175,6 +165,15 @@ test('Programmatic Save and Restore - 2 Snapped Apps', async t => {
         name: app2Name,
         mainWindowOptions: { autoShow: true, saveWindowState: false, defaultTop: 300, defaultLeft: 400, defaultHeight: 200, defaultWidth: 200 }
     });
+
+    const passIfAppsCreated = async (event: { topic: string, type: string, uuid: string }) => {
+        if (event.uuid === app1.identity.uuid || event.uuid === app2.identity.uuid) {
+            numAppsRestored++;
+        }
+        if (numAppsRestored === 2) {
+            y();
+        }
+    };
 
     await app1.run();
     await app2.run();
@@ -214,15 +213,6 @@ test('Programmatic Save and Restore - 2 Tabbed Apps', async t => {
         y = res;
         n = rej;
     });
-    
-    const passIfAppsCreated = async (event: { topic: string, type: string, uuid: string }) => {
-        if (event.uuid === app1.identity.uuid || event.uuid === app2.identity.uuid) {
-            numAppsRestored++;
-        }
-        if (numAppsRestored === 2) {
-            y();
-        }
-    };
 
     let numAppsRestored = 0;
 
@@ -240,6 +230,15 @@ test('Programmatic Save and Restore - 2 Tabbed Apps', async t => {
         name: app2Name,
         mainWindowOptions: { autoShow: true, saveWindowState: false, defaultTop: 300, defaultLeft: 400, defaultHeight: 200, defaultWidth: 200 }
     });
+
+    const passIfAppsCreated = async (event: { topic: string, type: string, uuid: string }) => {
+        if (event.uuid === app1.identity.uuid || event.uuid === app2.identity.uuid) {
+            numAppsRestored++;
+        }
+        if (numAppsRestored === 2) {
+            y();
+        }
+    };
 
     await app1.run();
     await app2.run();
@@ -297,3 +296,112 @@ test('Programmatic Save and Restore - 2 Tabbed Apps', async t => {
     t.is(bounds1.right, bounds2.right);
 });
 
+
+test('Programmatic Save and Restore - Deregistered - 1 App', async t => {
+    let y: () => void;
+    let n: (e: string) => void;
+    const p = new Promise((res, rej) => {
+        y = res;
+        n = rej;
+    });
+    
+    const app1Name = getAppName();
+
+    app1 = await fin.Application.create({
+        uuid: app1Name,
+        url: 'http://localhost:1337/test/deregisteredApp.html',
+        name: app1Name,
+        mainWindowOptions: {
+            autoShow: true,
+            saveWindowState: false,
+            defaultTop: 100,
+            defaultLeft: 100,
+            defaultHeight: 200,
+            defaultWidth: 200
+        }
+    });
+
+    const failIfAppCreated = async (event: {topic: string, type: string, uuid: string}) => {
+        if (event.uuid === app1.identity.uuid) {
+            y();
+            t.fail();
+        }
+    };
+
+    await app1.run();
+
+    await delay(500);
+
+    const generatedLayout = await client.dispatch('generateLayout');
+
+    await app1.close();
+
+    await fin.System.addListener('application-created', failIfAppCreated);
+
+    await client.dispatch('restoreLayout', generatedLayout);
+
+    setTimeout(
+        () => {
+            y();
+            t.pass();
+        }, 
+        2500
+    );
+
+    await p;
+});
+
+
+
+test('Programmatic Save and Restore - Deregistered - 1 App 1 Child', async t => {
+    let y: () => void;
+    let n: (e: string) => void;
+    const p = new Promise((res, rej) => {
+        y = res;
+        n = rej;
+    });
+    
+    const app1Name = getAppName();
+    
+    app1 = await fin.Application.create({
+        uuid: app1Name,
+        url: 'http://localhost:1337/test/deregisteredApp-createChild.html',
+        name: app1Name,
+        mainWindowOptions: {
+            autoShow: true,
+            saveWindowState: false,
+            defaultTop: 100,
+            defaultLeft: 100,
+            defaultHeight: 200,
+            defaultWidth: 200
+        }
+    });
+    
+        const failIfWindowCreated = async (event: { topic: string, type: string, uuid: string, name: string }) => {
+            if (event.name === 'Child-1 - win0' || event.name === app1Name) {
+                y();
+                t.fail();
+            }
+        };
+    
+    await app1.run();
+
+    await delay(1000);
+    
+    const generatedLayout = await client.dispatch('generateLayout');
+
+    await fin.System.addListener('window-created', failIfWindowCreated);
+
+    await app1.close();
+
+    await client.dispatch('restoreLayout', generatedLayout);
+
+    setTimeout(
+        () => {
+            y();
+            t.pass();
+        }, 2500
+    );
+
+    await p;
+});

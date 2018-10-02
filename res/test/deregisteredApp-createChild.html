@@ -1,0 +1,24 @@
+﻿<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Demo App - App 1</title>
+    <script src="../demo/deregisteredApp-bundle.js"></script>
+</head>
+<body>
+    <h1>
+        App 1 - Main Window
+    </h1>
+
+    <p>Unregistered from Snap & Dock, Tabbing, and Save & Restore</p>
+</body>
+
+<footer>
+    <script>
+        fin.desktop.main(() => {
+            deregisteredApp.createChild('Child-1');
+        })
+    </script>
+</footer>
+</html>
