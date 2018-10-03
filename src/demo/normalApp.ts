@@ -45,14 +45,13 @@ const positionWindow = async (win: WindowState) => {
 
 export async function createChild(parentWindowName: string): Promise<void> {
     const win = await openChild(parentWindowName + ' - win' + numChildren, numChildren);
-    win.show();
 }
 
 export function openChild(name: string, i: number, frame = true, url?: string) {
     numChildren++;
-    const win = fin.Window.create({
+    const win = new fin.desktop.Window({
         url: url || `${launchDir}/demo-window.html`,
-        autoShow: false,
+        autoShow: true,
         defaultHeight: 250 + 50 * i,
         defaultWidth: 250 + 50 * i,
         defaultLeft: 320 * (i % 3),

@@ -10,6 +10,7 @@ import {resizeWindowToSize} from './utils/resizeWindowToSize';
 import { ChannelClient } from 'hadouken-js-adapter/out/types/src/api/interappbus/channel/client';
 import { isInGroup } from './utils/isInGroup';
 import { delay } from './utils/delay';
+import { saveRestoreCreateChildWindow } from './utils/workspaces/saveRestoreCreateChildWindow';
 
 let win1: Window, client: ChannelClient, win2: Window, fin: Fin, app1: Application, app2: Application;
 
@@ -108,7 +109,7 @@ test('Programmatic Save and Restore - 1 App 1 Child', async t => {
 
     app1 = await fin.Application.create({
         uuid: app1Name,
-        url: 'http://localhost:1337/test/registeredApp-createChild.html',
+        url: 'http://localhost:1337/test/registeredApp.html',
         name: app1Name,
         mainWindowOptions: {
             autoShow: true,
@@ -122,12 +123,14 @@ test('Programmatic Save and Restore - 1 App 1 Child', async t => {
 
     await app1.run();
 
+    await saveRestoreCreateChildWindow(app1Name);
+
     await p;
 
     const generatedLayout = await client.dispatch('generateLayout');
-
+    
     await app1.close();
-
+    
     await client.dispatch('restoreLayout', generatedLayout);
 
     setTimeout(
@@ -363,7 +366,7 @@ test('Programmatic Save and Restore - Deregistered - 1 App 1 Child', async t => 
     
     app1 = await fin.Application.create({
         uuid: app1Name,
-        url: 'http://localhost:1337/test/deregisteredApp-createChild.html',
+        url: 'http://localhost:1337/test/deregisteredApp.html',
         name: app1Name,
         mainWindowOptions: {
             autoShow: true,
@@ -383,6 +386,8 @@ test('Programmatic Save and Restore - Deregistered - 1 App 1 Child', async t => 
     };
     
     await app1.run();
+
+    await saveRestoreCreateChildWindow(app1Name);
 
     await delay(1000);
     
@@ -421,7 +426,7 @@ test('Programmatic Save and Restore - Deregistered - 2 Snapped Apps', async t =>
         mainWindowOptions: { autoShow: true, saveWindowState: false, defaultTop: 100, defaultLeft: 100, defaultHeight: 200, defaultWidth: 200 }
     });
     app2 = await fin.Application.create({
-        url: 'http://localhost:1337/test/deregisteredApp-createChild.html',
+        url: 'http://localhost:1337/test/deregisteredApp.html',
         uuid: app2Name,
         name: app2Name,
         mainWindowOptions: { autoShow: true, saveWindowState: false, defaultTop: 300, defaultLeft: 400, defaultHeight: 200, defaultWidth: 200 }
@@ -436,6 +441,8 @@ test('Programmatic Save and Restore - Deregistered - 2 Snapped Apps', async t =>
 
     await app1.run();
     await app2.run();
+
+    await saveRestoreCreateChildWindow(app2Name);
 
     await delay(1000);
 
@@ -483,7 +490,7 @@ test('Programmatic Save and Restore - Deregistered - 2 Tabbed Apps', async t => 
         mainWindowOptions: { autoShow: true, saveWindowState: false, defaultTop: 100, defaultLeft: 100, defaultHeight: 200, defaultWidth: 200 }
     });
     app2 = await fin.Application.create({
-        url: 'http://localhost:1337/test/deregisteredApp-createChild.html',
+        url: 'http://localhost:1337/test/deregisteredApp.html',
         uuid: app2Name,
         name: app2Name,
         mainWindowOptions: { autoShow: true, saveWindowState: false, defaultTop: 300, defaultLeft: 400, defaultHeight: 200, defaultWidth: 200 }
@@ -498,6 +505,9 @@ test('Programmatic Save and Restore - Deregistered - 2 Tabbed Apps', async t => 
 
     await app1.run();
     await app2.run();
+
+    await saveRestoreCreateChildWindow(app2Name);
+
 
     await delay(1000);
 
