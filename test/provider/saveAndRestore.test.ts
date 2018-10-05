@@ -252,6 +252,8 @@ test('Programmatic Save and Restore - 2 Tabbed Apps', async t => {
     const win2Bounds = await getBounds(win2);
 
     await dragWindowTo(win1, win2Bounds.left, win2Bounds.top);
+
+    await delay(500);
     
     const generatedLayout = await client.dispatch('generateLayout');
     
@@ -508,7 +510,6 @@ test('Programmatic Save and Restore - Deregistered - 2 Tabbed Apps', async t => 
 
     await saveRestoreCreateChildWindow(app2Name);
 
-
     await delay(1000);
 
     win1 = await fin.Window.wrap({ uuid: app1.identity.uuid, name: app1.identity.uuid });
@@ -517,6 +518,8 @@ test('Programmatic Save and Restore - Deregistered - 2 Tabbed Apps', async t => 
     const win2Bounds = await getBounds(win2);
 
     await dragWindowTo(win1, win2Bounds.left, win2Bounds.top);
+
+    await delay(500);
 
     const generatedLayout = await client.dispatch('generateLayout');
 
