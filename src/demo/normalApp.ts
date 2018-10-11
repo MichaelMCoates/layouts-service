@@ -9,6 +9,7 @@ export interface Workspace {
 }
 
 import * as Layouts from '../client/main';
+import Bounds from 'hadouken-js-adapter/out/types/src/api/window/bounds';
 
 declare var window: _Window&{forgetMe: (identity: Identity) => void};
 
@@ -17,22 +18,39 @@ const launchDir = location.href.slice(0, location.href.lastIndexOf('/'));
 
 export async function createChild(parentWindowName: string): Promise<void> {
     const win = await openChild(parentWindowName + ' -  win' + numChildren, numChildren);
-    win.show();
 }
 
-export function openChild(name: string, i: number, frame = true, url?: string) {
+export function openChild(name: string, i: number, frame = true, url?: string, bounds?: Bounds) {
     numChildren++;
-    const win = fin.Window.create({
-        url: url || `${launchDir}/demo-window.html`,
-        autoShow: false,
-        defaultHeight: 250 + 50 * i,
-        defaultWidth: 250 + 50 * i,
-        defaultLeft: 320 * (i % 3),
-        defaultTop: i > 2 ? 400 : 50,
-        saveWindowState: false,
-        frame,
-        name
-    });
+    let win;
+
+    if (bounds) {
+        win = fin.Window.create({
+            url: url || `${launchDir}/demo-window.html`,
+            autoShow: true,
+            defaultHeight: bounds.height,
+            defaultWidth: bounds.width,
+            defaultLeft: bounds.left,
+            defaultTop: bounds.top,
+            saveWindowState: false,
+            frame,
+            name
+        });
+        
+    } else {
+        win = fin.Window.create({
+            url: url || `${launchDir}/demo-window.html`,
+            autoShow: true,
+            defaultHeight: 250 + 50 * i,
+            defaultWidth: 250 + 50 * i,
+            defaultLeft: 320 * (i % 3),
+            defaultTop: i > 2 ? 400 : 50,
+            saveWindowState: false,
+            frame,
+            name
+        });
+    }
+
     return win;
 }
 
@@ -44,8 +62,7 @@ export async function onAppRes(layoutApp: LayoutApp): Promise<LayoutApp> {
     const openWindows = await new Promise<fin.OpenFinWindow[]>(res => ofApp.getChildWindows(res));
     const openAndPosition = layoutApp.childWindows.map(async (win, index) => {
         if (!openWindows.some((w: fin.OpenFinWindow) => w.name === win.name)) {
-            const ofWin = await openChild(win.name, index, win.frame, win.info.url);
-            await positionWindow(win);
+            await openChild(win.name, index, win.frame, win.info.url, win);
         } else {
             await positionWindow(win);
         }
@@ -55,15 +72,15 @@ export async function onAppRes(layoutApp: LayoutApp): Promise<LayoutApp> {
 }
 
 // Positions a window when it is restored.
-// If the window is supposed to be tabbed, makes it leave its group to avoid tab collision bugs
 // Also given to the client to use.
 const positionWindow = async (win: WindowState) => {
     try {
         const ofWin = await fin.Window.wrap(win);
-        if (!win.isTabbed) {
-            await ofWin.leaveGroup();
-        }
         await ofWin.setBounds(win);
+        if (win.isTabbed) {
+            return;
+        }
+        await ofWin.leaveGroup();
 
 
         // COMMENTED OUT FOR DEMO
