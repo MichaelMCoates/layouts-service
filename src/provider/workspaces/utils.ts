@@ -235,7 +235,9 @@ export async function childWindowPlaceholderCheckRunningApp(
                     await createNormalPlaceholder(win);
                 }
             } else {
+                console.log("before removeTab in CWPCRA", win.name);
                 await tabService.removeTab(win);
+                console.log("after removeTab in CWPCRA", win.name);
             }
         }
     } else {

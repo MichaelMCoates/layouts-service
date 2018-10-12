@@ -304,42 +304,63 @@ export class DesktopTabGroup {
      * @param {Bounds} bounds Can set a custom size/position for the ejected window, or disable the default size change.
      */
     public async removeTab(tab: DesktopWindow, bounds?: Rectangle|null): Promise<void> {
+        console.log('1', tab);
         const index: number = this.tabs.indexOf(tab);
+        console.log('index', index, tab);
         if (tab && index >= 0) {
+            console.log('2', tab);
             const promises: Promise<void>[] = [];
-
+            console.log('3', tab);
+            
             // Remove tab
             promises.push(this.removeTabInternal(tab, index));
-
+            console.log('4', tab);
+            
             // Update tab window
             if (tab.isReady()) {
+                console.log('5', tab);
                 const frame: boolean = tab.getApplicationState().frame;
-
+                console.log('6', tab);
+                
                 if (bounds) {
+                    console.log('7', tab);
                     // Eject tab and apply custom bounds
                     promises.push(tab.applyProperties({hidden: false, frame, ...bounds}));
                 } else if (bounds === null) {
+                    console.log('8', tab);
                     // Eject tab without modifying window bounds
                     promises.push(tab.applyProperties({hidden: false, frame}));
                 } else {
+                    console.log('9', tab);
                     const tabStripHalfSize: Point = this._window.getState().halfSize;
+                    console.log('10', tab);
                     const state: WindowState = tab.getState();
+                    console.log('11', tab);
                     const center: Point = {x: state.center.x, y: state.center.y - tabStripHalfSize.y};
+                    console.log('12', tab);
                     const halfSize: Point = {x: state.halfSize.x, y: state.halfSize.y + tabStripHalfSize.y};
-
+                    console.log('13', tab);
+                    
                     // Eject tab and apply default bounds
                     promises.push(tab.applyProperties({hidden: false, frame, center, halfSize}));
+                    console.log('14', tab);
                 }
+                console.log('15', tab);
             }
-
+            
+            console.log('16', tab);
             // Activate next tab
             if (this._tabs.length >= 2 && this.activeTab.getId() === tab.getId()) {
+                console.log('17', tab);
                 const nextTab: DesktopWindow = this._tabs[index] ? this._tabs[index] : this._tabs[index - 1];
-
+                
                 promises.push(this.switchTab(nextTab));
+                console.log('18', tab);
             }
-
+            console.log('19', tab);
+            
             await Promise.all(promises);
+            console.log('20', tab);
         }
     }
 
@@ -456,14 +477,24 @@ export class DesktopTabGroup {
     }
 
     private async removeTabInternal(tab: DesktopWindow, index: number): Promise<void> {
+        console.log("A", tab);
         this._tabs.splice(index, 1);
+        console.log("B", tab);
         delete this._tabProperties[tab.getId()];
+        console.log("C", tab);
         tab.setSnapGroup(new DesktopSnapGroup());
+        console.log("D", tab);
         tab.onTeardown.remove(this.onWindowTeardown, this);
+        console.log("E", tab);
         await tab.setTabGroup(null);
-
+        console.log("F", tab);
+        
         const payload: TabGroupEventPayload = {tabGroupId: this.ID, tabID: tab.getIdentity()};
+        console.log("G", tab);
         await this.sendTabEvent(tab, WindowMessages.LEAVE_TAB_GROUP, payload);
+        console.log("H", tab);
+
+        console.log("Before if. Tabs are:", this._tabs);
 
         if (this._tabs.length < 2 && this._window.isReady()) {
             // Note: Sensitive order of operations, change with caution.
@@ -471,10 +502,14 @@ export class DesktopTabGroup {
             const removeTabPromises = this._tabs.map(async (tab) => {
                 // We don't receive bounds updates when windows are hidden, so cached position of inactive tabs are likely to be incorrect.
                 // Update cached position before removing tab, so that we can correctly resize the window to re-add the tabstrip height onto the window.
+                console.log("Before refresh", tab);
                 await tab.refresh();
+                console.log("After refresh", tab);
                 await this.removeTab(tab);
+                console.log("After remove", tab);
             });
             await Promise.all(removeTabPromises.concat(closePromise));
+            console.log("after promise.all. Tabs are:", this._tabs);
 
             DesktopTabGroup.onDestroyed.emit(this);
         }

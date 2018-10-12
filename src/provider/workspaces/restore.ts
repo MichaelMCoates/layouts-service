@@ -89,7 +89,9 @@ export const restoreLayout = async(payload: Layout, identity: Identity): Promise
         const isRunning = await p<boolean>(ofApp.isRunning.bind(ofApp))();
         if (isRunning) {
             // Should de-tab here.
+            console.log("before removeTab in CAP", app.mainWindow.name);
             await tabService.removeTab(app.mainWindow);
+            console.log("CAP removeTab resolved for", app.mainWindow.name);
 
             // Need to check its child windows here, if confirmed.
             await childWindowPlaceholderCheckRunningApp(app, tabbedWindows, tabbedPlaceholdersToWindows, openWindows);
@@ -106,6 +108,7 @@ export const restoreLayout = async(payload: Layout, identity: Identity): Promise
 
     // Kick off placeholder creation for all apps.
     await promiseMap(layout.apps, createAllPlaceholders);
+    console.log("createAllPlaceholders promiseMap resolved");
 
     // Edit the tabGroups object with the placeholder window names/uuids, so we can create a Tab Group with a combination of open applications and placeholder
     // windows.
@@ -124,6 +127,7 @@ export const restoreLayout = async(payload: Layout, identity: Identity): Promise
     });
 
     await tabService.createTabGroupsFromTabBlob(layout.tabGroups);
+    console.log("createTabGroupsFromTabBlob", layout.tabGroups);
 
     const apps = await promiseMap(layout.apps, async(app: LayoutApp): Promise<LayoutApp> => {
         // Get rid of childWindows for default response (anything else?)

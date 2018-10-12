@@ -451,7 +451,8 @@ export class DesktopWindow extends DesktopEntity implements Snappable {
 
                 if (hasChanges) {
                     console.log('Window refresh found changes: ', this.id, modifications);
-                    return this.updateState(modifications, ActionOrigin.APPLICATION);
+                    this.updateState(modifications, ActionOrigin.APPLICATION);
+                    return Promise.resolve();
                 } else {
                     console.log('Refreshed window, no changes were found', this.id);
                     return Promise.resolve();
