@@ -83,6 +83,7 @@ export const createNormalPlaceholder = async (win: WindowState) => {
         defaultWidth: width,
         defaultLeft: left,
         defaultTop: top,
+        frame: false,
         saveWindowState: false,
         opacity: 0.6,
         backgroundColor: '#D3D3D3'
@@ -112,6 +113,7 @@ export const createTabPlaceholder = async (win: WindowState) => {
         defaultWidth: width,
         defaultLeft: left,
         defaultTop: top,
+        frame: false,
         saveWindowState: false,
         opacity: 0.6,
         backgroundColor: '#D3D3D3'
