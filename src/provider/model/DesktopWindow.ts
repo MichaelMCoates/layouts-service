@@ -351,6 +351,9 @@ export class DesktopWindow extends DesktopEntity implements Snappable {
      * @param newHalfSize Can also simultaneously change the size of the window
      */
     public setSnapGroup(group: DesktopSnapGroup, offset?: Point, newHalfSize?: Point): Promise<void> {
+        console.log("SET SNAP GROUP CALLED");
+        console.log("group", group);
+        console.log("this.snapGroup", this.snapGroup);
         if (group !== this.snapGroup) {
             this.addToSnapGroup(group);
 
@@ -506,8 +509,18 @@ export class DesktopWindow extends DesktopEntity implements Snappable {
     }
 
     private addToSnapGroup(group: DesktopSnapGroup): void {
+        console.log("addToSnapGroup CALLED");
+        console.log('this.prevGroup', this.prevGroup);
+        console.log('this.snapGroup', this.snapGroup);
+        console.log('group', group);
+        console.log('this', this);
         this.prevGroup = this.snapGroup;
         this.snapGroup = group;
+
+        // if (this.prevGroup === this.snapGroup) {
+        //     console.log("Add window blocked", this.snapGroup);
+        //     return;
+        // }
         group.addWindow(this);
     }
 
@@ -787,35 +800,41 @@ export class DesktopWindow extends DesktopEntity implements Snappable {
     }
 
     private handleGroupChanged(event: fin.WindowGroupChangedEvent): void {
-        // Each group operation will raise an event from every window involved. To avoid handling the same event twice, we will only handle the event on the
-        // window that triggered the event
-        if (event.name !== event.sourceWindowName || event.uuid !== event.sourceWindowAppUuid) {
-            return;
-        }
+        console.log("handleGroupChanged Called", event);
+        console.log("event.reason", event.reason);
+        return;
+        // // Each group operation will raise an event from every window involved. To avoid handling the same event twice, we will only handle the event on the
+        // // window that triggered the event
+        // if (event.name !== event.sourceWindowName || event.uuid !== event.sourceWindowAppUuid) {
+        //     return;
+        // }
 
-        console.log('Received window group changed event: ', event);
+        // console.log('Received window group changed event: ', event);
 
-        if (event.reason === 'leave') {
-            // Remove window from its current group
-            this.addToSnapGroup(new DesktopSnapGroup());
-        } else {
-            const targetWindow: DesktopWindow|null = this.model.getWindow({uuid: event.targetWindowAppUuid, name: event.targetWindowName});
+        // if (event.reason === 'leave') {
+        //     console.log("ABOUT TO LEAVE SNAP GROUP");
+        //     // Remove window from its current group
+        //     this.addToSnapGroup(new DesktopSnapGroup());
+        // } else {
+        //     const targetWindow: DesktopWindow|null = this.model.getWindow({uuid: event.targetWindowAppUuid, name: event.targetWindowName});
+        //     console.log("targetWindow", targetWindow);
 
-            // Merge the groups
-            if (targetWindow) {
-                const targetGroup: DesktopSnapGroup = targetWindow.getSnapGroup();
+        //     // Merge the groups
+        //     if (targetWindow) {
+        //         const targetGroup: DesktopSnapGroup = targetWindow.getSnapGroup();
+        //         console.log("targetGroup", targetGroup);
 
-                if (event.reason === 'merge') {
-                    // When merging groups, we need to update all windows within the source window's group
-                    const windowsInGroup: DesktopWindow[] = this.snapGroup.windows as DesktopWindow[];  // TODO: Test snap groups that contain tabs
-                    windowsInGroup.forEach((window: DesktopWindow) => {
-                        window.addToSnapGroup(targetGroup);
-                    });
-                } else {
-                    // Add just the window that received the event to the target group
-                    this.addToSnapGroup(targetGroup);
-                }
-            }
-        }
+        //         if (event.reason === 'merge') {
+        //             // When merging groups, we need to update all windows within the source window's group
+        //             const windowsInGroup: DesktopWindow[] = this.snapGroup.windows as DesktopWindow[];  // TODO: Test snap groups that contain tabs
+        //             windowsInGroup.forEach((window: DesktopWindow) => {
+        //                 window.addToSnapGroup(targetGroup);
+        //             });
+        //         } else {
+        //             // Add just the window that received the event to the target group
+        //             this.addToSnapGroup(targetGroup);
+        //         }
+        //     }
+        // }
     }
 }

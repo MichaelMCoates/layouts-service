@@ -39,20 +39,43 @@ export const groupWindow = async (win: WindowState) => {
         return;
     }
     const {uuid, name} = win;
-    const ofWin = await fin.Window.wrap({uuid, name});
+    // const ofWin = await fin.Window.wrap({uuid, name});
     await promiseMap(win.windowGroup, async (w: Identity) => {
         if (w.uuid === 'layouts-service') {
             return;
         }
-        const windowToGroup = await fin.Window.wrap({uuid: w.uuid, name: w.name});
-        await model.expect(ofWin.identity as WindowIdentity);
-        await model.expect(windowToGroup.identity as WindowIdentity);
-        // ERROR: windowToGroup returns even if the window doesn't exist, so the if (windowToGroup) always results in true.
 
+        if (win.name === 'App2 -  win1') {
+            return;
+        }
+
+
+        console.log("win", win);
+        console.log("win.name", win.name);
+        console.log("w", w);
+
+        // const windowToGroup = await fin.Window.wrap({uuid: w.uuid, name: w.name});
+        await model.expect(win as WindowIdentity);
+        await model.expect(w as WindowIdentity);
+
+        const ofWinModel = await model.getWindow(win);
+        const windowToModel = await model.getWindow({uuid: w.uuid, name: w.name!});
+        // ERROR: windowToGroup returns even if the window doesn't exist, so the if (windowToGroup) always results in true.
+        
         // Wrap returns even if the window doesn't exist. We need a windowToGroup.exists function.
-        if (windowToGroup) {
+        if (windowToModel && ofWinModel) {
+            console.log("WINDOW TO MODEL");
+            const windowToModelSnapGroup = windowToModel.getSnapGroup();
+            if (windowToModelSnapGroup) {
+                console.log('ofWinModel', ofWinModel);
+                console.log('windowToModelSnapGroup', windowToModelSnapGroup);
+                ofWinModel.setSnapGroup(windowToModelSnapGroup);
+                // windowToModelSnapGroup.addWindow(ofWinModel);
+            }
             // Add the window to the same group as the target window
-            await windowToGroup.joinGroup(ofWin).catch((err: Error) => console.log('Attempted to group a window that does not exist', windowToGroup, err));
+            // await windowToGroup.joinGroup(ofWin)
+            //     .then(win => console.log('joined!', win))
+            //     .catch((err: Error) => console.log('Attempted to group a window that does not exist', windowToGroup, err));
         } else {
             console.error('Attempted to group a window that does not exist');
         }

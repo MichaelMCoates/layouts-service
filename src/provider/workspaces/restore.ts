@@ -3,7 +3,7 @@ import {_Window} from 'hadouken-js-adapter/out/types/src/api/window/window';
 import {Identity} from 'hadouken-js-adapter/out/types/src/identity';
 
 import {Layout, LayoutApp} from '../../client/types';
-import {apiHandler, tabService} from '../main';
+import {apiHandler, tabService, model} from '../main';
 import {p, promiseMap} from '../snapanddock/utils/async';
 
 import {regroupLayout} from './group';

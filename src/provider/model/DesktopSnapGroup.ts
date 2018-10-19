@@ -164,6 +164,9 @@ export class DesktopSnapGroup {
             // Remove window from it's previous group
             const prevGroup = (window.getSnapGroup() === this) ? window.getPrevGroup() : window.getSnapGroup();
             if (prevGroup) {
+                console.log('prevGroup remove window');
+                console.log('window', window);
+                console.log('prevGroup', prevGroup);
                 prevGroup.removeWindow(window);
             }
 
@@ -196,6 +199,7 @@ export class DesktopSnapGroup {
     }
 
     private removeWindow(window: DesktopWindow): void {
+        console.log("removeWindow called with ", window);
         const index: number = this._windows.indexOf(window);
 
         if (index >= 0) {
@@ -214,12 +218,14 @@ export class DesktopSnapGroup {
             // Inform window of removal
             // Note that client API only considers windows to belong to a group if it contains two or more windows
             if (this._windows.length > 0 && window.isReady()) {
+                console.log("ABOUT TO SEND LEAVE SNAP GROUP", window);
                 window.sendMessage(WindowMessages.LEAVE_SNAP_GROUP, {});
             }
-
+            
             // Inform service of removal
             this.onWindowRemoved.emit(this, window);
             if (this._windows.length === 0) {
+                console.log("ABOUT TO SEND ON DESTROYED", window);
                 DesktopSnapGroup.onDestroyed.emit(this);
             }
         }
