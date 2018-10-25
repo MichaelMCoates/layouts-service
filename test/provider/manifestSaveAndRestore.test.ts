@@ -19,7 +19,7 @@ let win1: Window, client: ChannelClient, win2: Window, fin: Fin, app1: Applicati
 
 test.before(async () => {
     fin = await getConnection();
-    client = await fin.InterApplicationBus.Channel.connect({ uuid: 'layouts-service' });
+    client = await fin.InterApplicationBus.Channel.connect('of-layouts-service-v1');
 });
 
 test.beforeEach(async () => {

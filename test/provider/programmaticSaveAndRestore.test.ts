@@ -19,7 +19,7 @@ const getAppName = () => 'test-app-' + appIdCount++;
 
 test.before(async () => {
     fin = await getConnection();
-    client = await fin.InterApplicationBus.Channel.connect({ uuid: 'layouts-service' });
+    client = await fin.InterApplicationBus.Channel.connect('of-layouts-service-v1');
 });
 
 test.beforeEach(async () => {
@@ -60,22 +60,29 @@ test('Programmatic Save and Restore - 1 App', async t => {
             defaultWidth: 200
         }
     });
-
+    console.log('app1', app1);
+    
     const passIfAppCreated = async (event: {topic: string, type: string, uuid: string}) => {
+        console.log('passIfAppCreated', event);
         if (event.uuid === app1.identity.uuid) {
             y();
         }
     };
-
+    
     await app1.run();
-
+    console.log('after run', app1);
+    
     const generatedLayout = await client.dispatch('generateLayout');
-
+    console.log('generatedLayout', generatedLayout);
+    
     await app1.close();
-
+    console.log('after close', app1);
+    
     await fin.System.addListener('application-created', passIfAppCreated);
-
+    console.log('after listener', app1);
+    
     await client.dispatch('restoreLayout', generatedLayout);
+    console.log('after restoreLayout', app1);
 
     setTimeout(
         () => {
