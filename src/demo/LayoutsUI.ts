@@ -95,32 +95,35 @@ export async function createAppFromManifest3() {
     // app.run();
 }
 
-export async function createAppProgrammatically4() {
+function programmaticApplicationFactory(uuid: string, deregistered: boolean) {
     const app = new fin.desktop.Application(
         {
-            url: `http://localhost:1337/demo/app4.html`,
-            uuid: 'App-4',
-            name: 'App-4',
+            url: deregistered ? `http://localhost:1337/demo/programmaticDeregisteredApp.html` : `http://localhost:1337/demo/programmaticNormalApp.html`,
+            uuid: `${uuid}`,
+            name: `${uuid}`,
             mainWindowOptions: {defaultWidth: 400, defaultHeight: 300, saveWindowState: false, autoShow: true, defaultCentered: true}
         },
         () => {
             app.run();
         },
-        console.error);
+        console.error
+    );
+}
+
+export async function createAppProgrammatically4() {
+    programmaticApplicationFactory("App-4", false);
+}
+
+export async function createAppProgrammatically6() {
+    programmaticApplicationFactory("App-6", false);
 }
 
 export async function createAppProgrammatically5() {
-    const app = new fin.desktop.Application(
-        {
-            url: `http://localhost:1337/demo/app5.html`,
-            uuid: 'App-5',
-            name: 'App-5',
-            mainWindowOptions: {defaultWidth: 300, defaultHeight: 400, saveWindowState: false, autoShow: true, defaultCentered: true}
-        },
-        () => {
-            app.run();
-        },
-        console.error);
+    programmaticApplicationFactory("App-5", true);
+}
+
+export async function createAppProgrammatically7() {
+    programmaticApplicationFactory("App-7", true);
 }
 
 export function createSnapWindows(): void {

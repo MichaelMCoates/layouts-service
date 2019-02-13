@@ -98,6 +98,22 @@ const positionWindow = async (win: WorkspaceWindow) => {
     }
 };
 
+document.addEventListener("DOMContentLoaded", () => {
+    const finWindow = fin.Window.getCurrentSync();
+    const h1 = document.getElementById('h1');
+    if (h1) {
+        h1.innerText = `${finWindow.identity.uuid} - Main Window`;
+    }
+    const title = document.getElementById('title');
+    if (title) {
+        title.innerText = `Demo App - ${finWindow.identity.uuid}`;
+    }
+    const programmaticButton = document.getElementById('programmaticButton');
+    if (programmaticButton) {
+        programmaticButton.onclick = () => createChild(`${finWindow.identity.uuid}`);
+    }
+});
+
 // Allow layouts service to save and restore this application
 Layouts.workspaces.setGenerateHandler(() => {
     return {test: true};
